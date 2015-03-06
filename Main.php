@@ -20,7 +20,6 @@ class Main
      */
     public function __construct($contentSize, $doubleCheck)
     {
-        require_once(__DIR__ . '/vendor/autoload.php');
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
         $this->client = new \GuzzleHttp\Client();
@@ -48,7 +47,10 @@ class Main
         }
 
         foreach ($urlList as $url) {
-            if ($this->UrlValidation($url)) {
+            $metaData = $this->client->get($url);
+
+            if ($this->hardCheckByUrlWethHeader($metaData) ||
+                $this->hardCheckByUrlWethContents($metaData)) {
                 $result['white'][] = $url;
             } else {
                 $result['black'][] = $url;
@@ -62,28 +64,25 @@ class Main
      * @param string $url validationData
      * @return bool Soft404 or normalContents
      */
-    private function UrlValidation($url)
+    private function hardCheckByUrlWethHeader(\GuzzleHttp\Message\Response $metaData)
     {
-        $metaData = $this->client->get($url)->getHeaders();
-        switch ($this->doubleCheck) {
-        case false:
+        $head = array_change_key_case($metaData->getHeaders());
 
-            if (!isset($metaData)) {
-                return false;
-            }
-
-            if (isset($metaData['Status']) && $metaData['Status'][0] === 200 ||
-                isset($metaData['Status']) && $metaData['Status'][0] === 304) {
-                return true;
-            }
-
-            if (isset($metaData['Content-Length']) && $metaData['Content-Length'] >= $this->contentsSize) {
-                return true;
-            }
-            break;
-        case true:
-            break;
+        if (array_key_exists('status', $head) && array_search(200, $head['status']) !== false ||
+            array_key_exists('status', $head) && array_search(304, $head['status']) !== false) {
+            return true;
         }
+
+        if (array_key_exists('content-length', $head) && $head['content-length'][0] >= $this->contentsSize) {
+            return true;
+        }
+
     }
 
+    private function hardCheckByUrlWethContents(\GuzzleHttp\Message\Response $metaData)
+    {
+        if (mb_strlen($metaData->getBody()->getContents()) >= $this->contentsSize ) {
+            return true;
+        }
+    }
 }
