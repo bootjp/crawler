@@ -9,48 +9,81 @@ class Main
 {
     protected $client;
 
-    public function __construct($contentSize)
-    {
-        require_once (__DIR__ . './vender/autoload.php');
+    protected $contentsSize;
 
+    protected $doubleCheck;
+
+    /**
+     * initialisation.
+     * @param int  $contentSize
+     * @param bool $doubleCheck
+     */
+    public function __construct($contentSize, $doubleCheck)
+    {
+        require_once(__DIR__ . '/vendor/autoload.php');
+        $this->contentsSize = (int) $contentSize;
+        $this->doubleCheck = (bool) $doubleCheck;
         $this->client = new \GuzzleHttp\Client();
     }
     /**
-      *
-      * @param mixed $url
-      * @throws \ReflectionException
-      */
-    public function start($url = null)
+     * Wrapper
+     * @param mixed $url
+     * @throws \ReflectionException
+     * @return arrat URLLIST
+     */
+    public function start($url)
     {
         $urlList = [];
-        $whileList = [];
+        $result['white'] = [];
+        $result['black'] = [];
 
         if (is_null($url)) {
-            throw new \ReflectionException("Start URL is not null.");
+            throw new \ReflectionException('Start URL is not null.');
         } else if (is_array($url)) {
-
             foreach ($url as $value) {
-                $urlList += $value;
+                $urlList[] = $value;
             }
-
+        } else {
+            $urlList[] = $url;
         }
 
         foreach ($urlList as $url) {
-            if ($this->client->get($url)->getStatusCode() === 200 || $this->client->get($url)->getStatusCode() === 304) {
-                $this->
-                $whileList += $url;
+            if ($this->UrlValidation($url)) {
+                $result['white'][] = $url;
+            } else {
+                $result['black'][] = $url;
             }
-
         }
+
+        return $result;
     }
     /**
-     * DataValidation Check Soft404 Error
-     * @param string $data validationData
+     * DataValidation Check 404 Error
+     * @param string $url validationData
      * @return bool Soft404 or normalContents
      */
-    private function dataValidation($data)
+    private function UrlValidation($url)
     {
+        $metaData = $this->client->get($url)->getHeaders();
+        switch ($this->doubleCheck) {
+        case false:
 
+            if (!isset($metaData)) {
+                return false;
+            }
+
+            if (isset($metaData['Status']) && $metaData['Status'][0] === 200 ||
+                isset($metaData['Status']) && $metaData['Status'][0] === 304) {
+                return true;
+            }
+
+            if (isset($metaData['Content-Length']) && $metaData['Content-Length'] >= $this->contentsSize) {
+                return true;
+            }
+            break;
+        case true:
+            break;
+        }
     }
 
 }
