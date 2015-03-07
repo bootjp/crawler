@@ -47,14 +47,18 @@ class Main
         }
 
         foreach ($urlList as $url) {
+
+            $this->client->setDefaultOption('exceptions', false);
             $metaData = $this->client->get($url);
 
-            if ($this->hardCheckByUrlWethHeader($metaData) ||
-                $this->hardCheckByUrlWethContents($metaData)) {
+            if ($this->hardCheckByHeader($metaData) ||
+                $this->softCheckByContents($metaData)) {
                 $result['white'][] = $url;
             } else {
                 $result['black'][] = $url;
             }
+
+            sleep(5);
         }
 
         return $result;
@@ -64,7 +68,7 @@ class Main
      * @param string $url validationData
      * @return bool Soft404 or normalContents
      */
-    private function hardCheckByUrlWethHeader(\GuzzleHttp\Message\Response $metaData)
+    private function hardCheckByHeader(\GuzzleHttp\Message\Response $metaData)
     {
         $head = array_change_key_case($metaData->getHeaders());
 
@@ -79,12 +83,30 @@ class Main
 
     }
 
-    private function hardCheckByUrlWethContents(\GuzzleHttp\Message\Response $metaData)
+    private function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
-        if (mb_strlen($metaData->getBody()->getContents()) >= $this->contentsSize ) {
+        if (strlen($metaData->getBody()->getContents()) >= $this->contentsSize) {
+            if ($this->doubleCheck){
+                foreach (self::softErrorWords() as $word) {
+                    var_dump(($metaData->getBody()->getContents()));exit;
+                    if (strpos($word, strtolower($metaData->getBody()->getContents())) !== false){
+                        return false;
+                    }
+                }
+            }
+
             return true;
         } else {
             return false;
         }
+    }
+
+    private static function softErrorWords()
+    {
+        return [
+            'not found',
+            'みつかりま',
+            '見つかりま'
+        ];
     }
 }

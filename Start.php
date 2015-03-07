@@ -26,7 +26,6 @@ class Start
         $urlList = [];
         $matches = [];
         $urlList['baseUrl'] = (string) $baseUrl;
-        $urlList['unknown'] = [];
 
         $contens = $this->client->get($baseUrl)->getBody()->getContents();
 
@@ -39,11 +38,11 @@ class Start
         foreach ($matches['url'] as $key => $url) {
 
             if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $url)) {
-                $urlList[] += $url;
+                $urlList[] = $url;
             } else if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $baseUrl . $url)) {
-                $urlList[] = $baseUrl . $url;
+                $urlList[] = $baseUrl . urlencode($url);
             } else {
-                $urlList['unknown'][] = $url;
+                $urlList['unknown'] = $url;
             }
         }
 

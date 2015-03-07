@@ -9,5 +9,5 @@ require_once (__DIR__ . '/vendor/autoload.php');
 require_once (__DIR__ . '/Main.php');
 require_once (__DIR__ . '/Start.php');
 
-$obj = new Main(500, false);
+$obj = new Main(500, true);
 print_r($obj->start((new Start())->layerStart('https://github.com/bootjp/crawler/blob/master/Main.php')));
