@@ -83,6 +83,8 @@ class Main
     {
         if (mb_strlen($metaData->getBody()->getContents()) >= $this->contentsSize ) {
             return true;
+        } else {
+            return false;
         }
     }
 }
