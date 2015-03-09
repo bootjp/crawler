@@ -65,7 +65,7 @@ class Main
     }
     /**
      * DataValidation Check 404 Error
-     * @param string $url validationData
+     * @param string $metaData validationData
      * @return bool Soft404 or normalContents
      */
     private function hardCheckByHeader(\GuzzleHttp\Message\Response $metaData)
@@ -86,10 +86,9 @@ class Main
     private function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
         if (strlen($metaData->getBody()->getContents()) >= $this->contentsSize) {
-            if ($this->doubleCheck){
+            if ($this->doubleCheck) {
                 foreach (self::softErrorWords() as $word) {
-                    var_dump(($metaData->getBody()->getContents()));exit;
-                    if (strpos($word, strtolower($metaData->getBody()->getContents())) !== false){
+                    if (stripos($word, $metaData->getBody()->getContents()) !== false){
                         return false;
                     }
                 }

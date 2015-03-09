@@ -40,7 +40,7 @@ class Start
             if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $url)) {
                 $urlList[] = $url;
             } else if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $baseUrl . $url)) {
-                $urlList[] = $baseUrl . urlencode($url);
+                $urlList[] = $baseUrl . $url;
             } else {
                 $urlList['unknown'] = $url;
             }
