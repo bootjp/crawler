@@ -5,9 +5,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-require_once (__DIR__ . '/vendor/autoload.php');
-require_once (__DIR__ . '/Main.php');
-require_once (__DIR__ . '/Start.php');
 
-$obj = new Main(500, true);
-print_r($obj->start((new Start())->layerStart('https://github.com/bootjp/crawler/blob/master/Main.php')));
+require_once (__DIR__ . '/vendor/autoload.php');
+require_once (__DIR__ . '/Checker.php');
+
+if (count($argv) < 2){
+    echo "Use ex. $ php test.php https://bootjp.me/ \n";
+    exit;
+}
+
+print_r((new Checker())->start($argv[1], true));

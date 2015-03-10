@@ -5,7 +5,7 @@
  *
  * @author bootjp
  */
-class Main
+class Checker
 {
     protected $client;
 
@@ -15,10 +15,10 @@ class Main
 
     /**
      * initialisation.
-     * @param int  $contentSize
-     * @param bool $doubleCheck
+     * @param int  $contentSize [optional]
+     * @param bool $doubleCheck [optional]
      */
-    public function __construct($contentSize, $doubleCheck)
+    public function __construct($contentSize = 1000, $doubleCheck = false)
     {
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
@@ -27,14 +27,19 @@ class Main
     /**
      * Wrapper
      * @param mixed $url
+     * @param bool $getFlag true when get content on the $url
      * @throws \ReflectionException
      * @return arrat URLLIST
      */
-    public function start($url)
+    public function start($url, $getFlag = false)
     {
         $urlList = [];
         $result['white'] = [];
         $result['black'] = [];
+
+        if ($getFlag) {
+            $url = $this->layerStart($url);
+        }
 
         if (is_null($url)) {
             throw new \ReflectionException('Start URL is not null.');
@@ -63,6 +68,35 @@ class Main
 
         return $result;
     }
+
+    private function layerStart($baseUrl)
+    {
+        $urlList = [];
+        $matches = [];
+        $urlList['baseUrl'] = (string) $baseUrl;
+
+        $contents = $this->client->get($baseUrl)->getBody()->getContents();
+
+        preg_match_all('{<a.+?href=[\"|\'](?<url>.+?)[\"\|\'].*?>}is', $contents, $matches);
+
+        if (!array_key_exists('url', $matches)) {
+            return null;
+        }
+
+        foreach ($matches['url'] as $key => $url) {
+
+            if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $url)) {
+                $urlList[] = $url;
+            } else if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $baseUrl . $url)) {
+                $urlList[] = $baseUrl . $url;
+            } else {
+                $urlList['unknown'] = $url;
+            }
+        }
+
+        return array_unique($urlList);
+    }
+
     /**
      * DataValidation Check 404 Error
      * @param string $metaData validationData
@@ -71,6 +105,11 @@ class Main
     private function hardCheckByHeader(\GuzzleHttp\Message\Response $metaData)
     {
         $head = array_change_key_case($metaData->getHeaders());
+
+        if (array_key_exists('status', $head) && array_search(404, $head['status']) !== false ||
+            array_key_exists('status', $head) && array_search(403, $head['status']) !== false) {
+            return false;
+        }
 
         if (array_key_exists('status', $head) && array_search(200, $head['status']) !== false ||
             array_key_exists('status', $head) && array_search(304, $head['status']) !== false) {
@@ -85,18 +124,21 @@ class Main
 
     private function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
-        if (strlen($metaData->getBody()->getContents()) >= $this->contentsSize) {
-            if ($this->doubleCheck) {
-                foreach (self::softErrorWords() as $word) {
-                    if (stripos($word, $metaData->getBody()->getContents()) !== false){
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        } else {
+        if (!strlen($metaData->getBody()->getContents()) >= $this->contentsSize) {
             return false;
+        }
+
+        if ($this->doubleCheck) {
+            return $this->softCheckByContentsWords($metaData);
+        }
+    }
+
+    private function softCheckByContentsWords(\GuzzleHttp\Message\Response $metaData)
+    {
+        foreach (self::softErrorWords() as $word) {
+            if (stripos($word, $metaData->getBody()->getContents()) !== false) {
+                return false;
+            }
         }
     }
 
