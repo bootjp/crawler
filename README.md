@@ -2,13 +2,16 @@
 
 ### Makeing now...
 
-### How To Use 
+### How To Use
 
-* Use composer 
-  + What Composer!? 
-    - [https://getcomposer.org/](https://getcomposer.org/)
+* Use composer
+  + You do not know composer?
+    - OK, GO to page => [https://getcomposer.org/](https://getcomposer.org/)
 
 ```shell
+$ curl -s http://getcomposer.org/installer | php
+$ php composer.phar install
+or
 $ composer install
 $ php test.php https://bootjp.me/
 ```

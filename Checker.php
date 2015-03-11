@@ -1,5 +1,7 @@
 <?php
 
+namespace Error;
+
 /**
  * Description of Main
  *
@@ -27,9 +29,9 @@ class Checker
     /**
      * Wrapper
      * @param mixed $url
-     * @param bool $getFlag true when get content on the $url
+     * @param bool $getFlag [optional] true when get content on the $url
      * @throws \ReflectionException
-     * @return arrat URLLIST
+     * @return array URLLIST
      */
     public function start($url, $getFlag = false)
     {
@@ -69,6 +71,11 @@ class Checker
         return $result;
     }
 
+    /**
+     * Get Url Page Contents Links
+     * @param mixed $baseUrl
+     * @return array URllist
+     */
     private function layerStart($baseUrl)
     {
         $urlList = [];
@@ -98,7 +105,7 @@ class Checker
     }
 
     /**
-     * DataValidation Check 404 Error
+     * DataValidation Error check by header
      * @param string $metaData validationData
      * @return bool Soft404 or normalContents
      */
@@ -122,6 +129,11 @@ class Checker
 
     }
 
+    /**
+     * Soft404 check by contents Length
+     * @param \GuzzleHttp\Message\Response $metaData
+     * @return bool
+     */
     private function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
         if (!strlen($metaData->getBody()->getContents()) >= $this->contentsSize) {
@@ -133,6 +145,11 @@ class Checker
         }
     }
 
+    /**
+     * Soft404 Error check by words
+     * @param \GuzzleHttp\Message\Response $metaData
+     * @return bool Result
+     */
     private function softCheckByContentsWords(\GuzzleHttp\Message\Response $metaData)
     {
         foreach (self::softErrorWords() as $word) {
@@ -142,6 +159,11 @@ class Checker
         }
     }
 
+    /**
+     * Soft404 Page on Words.
+     * @param  none
+     * @return array
+     */
     private static function softErrorWords()
     {
         return [
