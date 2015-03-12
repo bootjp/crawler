@@ -3,7 +3,7 @@
 namespace Error;
 
 /**
- * Description of Main
+ * Description of Checker Main
  *
  * @author bootjp
  */
@@ -20,7 +20,7 @@ class Checker
      * @param int  $contentSize [optional]
      * @param bool $doubleCheck [optional]
      */
-    public function __construct($contentSize = 1000, $doubleCheck = false)
+    public function __construct($contentSize = 500, $doubleCheck = true)
     {
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
@@ -29,7 +29,7 @@ class Checker
     }
     /**
      * Wrapper
-     * @param mixed $url
+     * @param mixed $url    [require]
      * @param bool $getFlag [optional] true when fetch content on the $url
      * @throws \ReflectionException
      * @return array URLLIST
@@ -51,12 +51,13 @@ class Checker
                 $urlList[] = $value;
             }
         } else {
-            $urlList[] = $url;
+            $urlList[] = (string) $url;
         }
 
         foreach ($urlList as $url) {
 
             $metaData = $this->client->get($url);
+//            var_dump(stripos($metaData->getBody()->getContents(), 'exception'));
 
             if ($this->hardCheckByHeader($metaData) &&
                 $this->softCheckByContents($metaData)) {
@@ -105,7 +106,7 @@ class Checker
     }
 
     /**
-     * DataValidation Error check by header
+     * Error check by header
      * @param string $metaData validationData
      * @return bool Soft404 or normalContents
      */
@@ -127,6 +128,7 @@ class Checker
             return true;
         }
 
+        return true;
     }
 
     /**
@@ -134,14 +136,16 @@ class Checker
      * @param \GuzzleHttp\Message\Response $metaData
      * @return bool
      */
-    private function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
+    public function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
         if (!strlen($metaData->getBody()->getContents()) >= $this->contentsSize) {
             return false;
         }
 
         if ($this->doubleCheck) {
-            return $this->softCheckByContentsWords($metaData);
+            if (!$this->softCheckByContentsWords($metaData)) {
+                return false;
+            }
         }
 
         return true;
@@ -152,28 +156,27 @@ class Checker
      * @param \GuzzleHttp\Message\Response $metaData
      * @return bool Result
      */
-    private function softCheckByContentsWords(\GuzzleHttp\Message\Response $metaData)
+    private function softCheckByContentsWords($metaData)
     {
-        foreach (self::softErrorWords() as $word) {
-            if (stripos($word, $metaData->getBody()->getContents()) !== false) {
+        var_dump($metaData->getBody()->getContents());
+        return array_filter(self::getSoftErrorWords(), function($word) use ($metaData) {
+            print_r($word);
+            //var_dump(stripos($metaData->getBody()->getContents(), $word));
+            if (stripos($metaData->getBody()->getContents(), $word) !== false) {
                 return false;
             }
-        }
 
-        return true;
+            return true;
+        });
     }
 
     /**
-     * Soft404 Page on Words.
+     * Return soft404 Page on Words.
      * @param  none
      * @return array
      */
-    private static function softErrorWords()
+    private function getSoftErrorWords()
     {
-        return [
-            'not found',
-            'みつかりま',
-            '見つかりま'
-        ];
+        return file('ErrorPageWords.txt');
     }
 }
