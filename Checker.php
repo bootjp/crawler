@@ -58,7 +58,7 @@ class Checker
             $this->client->setDefaultOption('exceptions', false);
             $metaData = $this->client->get($url);
 
-            if ($this->hardCheckByHeader($metaData) ||
+            if ($this->hardCheckByHeader($metaData) &&
                 $this->softCheckByContents($metaData)) {
                 $result['white'][] = $url;
             } else {
