@@ -29,7 +29,7 @@ class Checker
     /**
      * Wrapper
      * @param mixed $url
-     * @param bool $getFlag [optional] true when get content on the $url
+     * @param bool $getFlag [optional] true when fetch content on the $url
      * @throws \ReflectionException
      * @return array URLLIST
      */
@@ -40,7 +40,7 @@ class Checker
         $result['black'] = [];
 
         if ($getFlag) {
-            $url = $this->layerStart($url);
+            $url = $this->fetchByContents($url);
         }
 
         if (is_null($url)) {
@@ -72,11 +72,11 @@ class Checker
     }
 
     /**
-     * Get Url Page Contents Links
+     * Fetch Page Contents Links
      * @param mixed $baseUrl
      * @return array URllist
      */
-    private function layerStart($baseUrl)
+    private function fetchByContents($baseUrl)
     {
         $urlList = [];
         $matches = [];
@@ -87,10 +87,10 @@ class Checker
         preg_match_all('{<a.+?href=[\"|\'](?<url>.+?)[\"\|\'].*?>}is', $contents, $matches);
 
         if (!array_key_exists('url', $matches)) {
-            return null;
+            throw new \ErrorException('Not match contents on url.');
         }
 
-        foreach ($matches['url'] as $key => $url) {
+        foreach ($matches['url'] as $url) {
 
             if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $url)) {
                 $urlList[] = $url;
@@ -143,6 +143,8 @@ class Checker
         if ($this->doubleCheck) {
             return $this->softCheckByContentsWords($metaData);
         }
+
+        return true;
     }
 
     /**
@@ -157,6 +159,8 @@ class Checker
                 return false;
             }
         }
+
+        return true;
     }
 
     /**
