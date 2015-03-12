@@ -25,6 +25,7 @@ class Checker
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
         $this->client = new \GuzzleHttp\Client();
+        $this->client->setDefaultOption('exceptions', false);
     }
     /**
      * Wrapper
@@ -55,7 +56,6 @@ class Checker
 
         foreach ($urlList as $url) {
 
-            $this->client->setDefaultOption('exceptions', false);
             $metaData = $this->client->get($url);
 
             if ($this->hardCheckByHeader($metaData) &&
