@@ -57,7 +57,6 @@ class Checker
         foreach ($urlList as $url) {
 
             $metaData = $this->client->get($url);
-//            var_dump(stripos($metaData->getBody()->getContents(), 'exception'));
 
             if ($this->hardCheckByHeader($metaData) &&
                 $this->softCheckByContents($metaData)) {
@@ -138,7 +137,7 @@ class Checker
      */
     public function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
-        if (!strlen($metaData->getBody()->getContents()) >= $this->contentsSize) {
+        if (!$metaData->getBody()->getSize() >= $this->contentsSize) {
             return false;
         }
 
@@ -158,15 +157,10 @@ class Checker
      */
     private function softCheckByContentsWords($metaData)
     {
-        var_dump($metaData->getBody()->getContents());
         return array_filter(self::getSoftErrorWords(), function($word) use ($metaData) {
-            print_r($word);
-            //var_dump(stripos($metaData->getBody()->getContents(), $word));
-            if (stripos($metaData->getBody()->getContents(), $word) !== false) {
+            if (stripos(strip_tags($metaData->getBody()->getContents()), $word) !== false) {
                 return false;
             }
-
-            return true;
         });
     }
 
@@ -177,6 +171,6 @@ class Checker
      */
     private function getSoftErrorWords()
     {
-        return file('ErrorPageWords.txt');
+        return file('ErrorPageWords.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     }
 }
