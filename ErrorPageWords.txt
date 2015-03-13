@@ -2,6 +2,6 @@ not found
 みつかりません
 見つかりません
 ないよー
+ナイヨー
 工事中
-exception
-Exception
+manual
