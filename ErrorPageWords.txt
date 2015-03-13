@@ -1,7 +1,7 @@
+exception
 not found
 みつかりません
 見つかりません
 ないよー
 ナイヨー
 工事中
-manual

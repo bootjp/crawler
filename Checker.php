@@ -142,7 +142,7 @@ class Checker
         }
 
         if ($this->doubleCheck) {
-            if (!$this->softCheckByContentsWords($metaData)) {
+            if (!($this->softCheckByContentsWords($metaData))) {
                 return false;
             }
         }
@@ -155,13 +155,15 @@ class Checker
      * @param \GuzzleHttp\Message\Response $metaData
      * @return bool Result
      */
-    private function softCheckByContentsWords($metaData)
+    private function softCheckByContentsWords(\GuzzleHttp\Message\Response $metaData)
     {
-        return array_filter(self::getSoftErrorWords(), function($word) use ($metaData) {
-            if (stripos(strip_tags($metaData->getBody()->getContents()), $word) !== false) {
+        foreach (self::getSoftErrorWords() as $word) {
+            if (mb_stripos($metaData->getBody()->getContents(), $word) !== false) {
                 return false;
             }
-        });
+        }
+
+        return true;
     }
 
     /**
@@ -169,7 +171,7 @@ class Checker
      * @param  none
      * @return array
      */
-    private function getSoftErrorWords()
+    private static function getSoftErrorWords()
     {
         return file('ErrorPageWords.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     }

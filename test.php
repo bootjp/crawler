@@ -14,4 +14,4 @@ if (count($argv) < 2){
     exit;
 }
 
-print_r((new Error\Checker())->start($argv[1], false));
+print_r((new Error\Checker())->start($argv[1], true));
