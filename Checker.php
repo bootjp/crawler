@@ -106,20 +106,24 @@ class Checker
 
     /**
      * Error check by header
-     * @param string $metaData validationData
+     * @param \GuzzleHttp\Message\Response $metaData
      * @return bool Soft404 or normalContents
      */
     private function hardCheckByHeader(\GuzzleHttp\Message\Response $metaData)
     {
         $head = array_change_key_case($metaData->getHeaders());
 
-        if (array_key_exists('status', $head) && array_search(404, $head['status']) !== false ||
-            array_key_exists('status', $head) && array_search(403, $head['status']) !== false) {
+        if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 404) ||
+            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 403) ||
+            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 401) ||
+            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 503) ||
+            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 502) ||
+            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 500)) {
             return false;
         }
 
-        if (array_key_exists('status', $head) && array_search(200, $head['status']) !== false ||
-            array_key_exists('status', $head) && array_search(304, $head['status']) !== false) {
+        if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 200) ||
+            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 304)) {
             return true;
         }
 
@@ -137,7 +141,7 @@ class Checker
      */
     public function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
-        if (!$metaData->getBody()->getSize() >= $this->contentsSize) {
+        if ($metaData->getBody()->getSize() <= $this->contentsSize) {
             return false;
         }
 
