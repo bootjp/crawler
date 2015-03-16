@@ -96,9 +96,9 @@ class Checker
 
         foreach ($matches['url'] as $url) {
 
-            if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $url)) {
+            if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}i', $url)) {
                 $urlList[] = $url;
-            } else if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $baseUrl . $url)) {
+            } else if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}i', $baseUrl . $url)) {
                 $urlList[] = $baseUrl . $url;
             } else {
                 $this->garbage[] = $url;
