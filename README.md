@@ -10,14 +10,22 @@
 * Use composer
   + You do not know composer?
     - OK, GO to page => [https://getcomposer.org/](https://getcomposer.org/)
-
+  
+Introduction
 ```shell
 $ curl -s http://getcomposer.org/installer | php
 $ php composer.phar install
 or
 $ composer install
-$ php test.php https://bootjp.me/
 ```
+Use Ex.
+```shell
+$ php test.php https://bootjp.me/
+or
+$ php test.php https://bootjp.me/ true
+```
+
+args value 3 is true when fetch URL on the contents links.
 
 [LICENSE](https://github.com/bootjp/crawler/blob/master/LICENSE)
 

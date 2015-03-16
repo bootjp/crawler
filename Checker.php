@@ -15,6 +15,8 @@ class Checker
 
     protected $doubleCheck;
 
+    protected $garbage = [];
+
     /**
      * initialisation.
      * @param int  $contentSize [optional]
@@ -68,6 +70,8 @@ class Checker
             sleep(5);
         }
 
+        $result['UnknownLinks'] = $this->garbage;
+
         return $result;
     }
 
@@ -97,7 +101,7 @@ class Checker
             } else if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}', $baseUrl . $url)) {
                 $urlList[] = $baseUrl . $url;
             } else {
-                $urlList['unknown'] = $url;
+                $this->garbage[] = $url;
             }
         }
 
