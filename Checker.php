@@ -151,8 +151,12 @@ class Checker
         }
 
         if ($this->doubleCheck) {
-            if (!($this->softCheckByContentsWords($metaData))) {
-                return false;
+            $result = $this->softCheckByContentsWords($metaData);
+            if (!$result['result']) {
+                return [
+                    'result' => false,
+                    'word' => $result['word']
+                ];
             }
         }
 
@@ -168,7 +172,10 @@ class Checker
     {
         foreach (self::getSoftErrorWords() as $word) {
             if (mb_stripos($metaData->getBody()->getContents(), $word) !== false) {
-                return false;
+                return [
+                    'result' => false,
+                    'word' => $word
+                ];
             }
         }
 
