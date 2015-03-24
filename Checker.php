@@ -57,18 +57,25 @@ class Checker
             $urlList[] = (string) $url;
         }
 
-        foreach ($urlList as $url) {
+        echo 'Cheking..';
+
+        foreach ($urlList as $key => $url) {
 
             $metaData = $this->client->get($url);
 
-            if ($this->hardCheckByHeader($metaData) &&
-                $this->softCheckByContents($metaData)) {
-                $result['white'][] = $url;
+            $headCheck = (array) $this->hardCheckByHeader($metaData);
+            $softCheck = (array) $this->softCheckByContents($metaData);
+
+            if ($headCheck['result'] && $softCheck['result']) {
+                $result['white'][$key]['url'] = $url;
+                $result['white'][$key]['status'] = 'OK';
             } else {
-                $result['black'][] = $url;
+                $result['black'][$key]['url'] = $url;
+                $result['black'][$key]['status'] = array_key_exists('status', $headCheck) ? $headCheck['status'] : $softCheck['status'];
             }
 
             sleep(5);
+            echo '.';
         }
 
         $result['UnknownLinks'] = $this->garbage;
@@ -124,19 +131,29 @@ class Checker
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 503) ||
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 502) ||
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 500)) {
-            return false;
+            return [
+                'result' => false,
+                'status' => 'NG : status code'
+            ];
         }
 
         if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 200) ||
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 304)) {
-            return true;
+            return [
+                'result' => true
+            ];
         }
 
         if (array_key_exists('content-length', $head) && $head['content-length'][0] >= $this->contentsSize) {
-            return true;
+            return [
+                'result' => true
+            ];
+
         }
 
-        return true;
+        return [
+            'result' => true
+        ];
     }
 
     /**
@@ -147,16 +164,26 @@ class Checker
     public function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
         if ($metaData->getBody()->getSize() <= $this->contentsSize) {
-            return false;
+            return [
+                'result' => false,
+                'status' => 'NG : contentsSize'
+            ];
         }
 
         if ($this->doubleCheck) {
-            if (!($this->softCheckByContentsWords($metaData))) {
-                return false;
+            $result = $this->softCheckByContentsWords($metaData);
+            if (!$result['result']) {
+                return [
+                    'result' => $result['result'],
+                    'status' => $result['status']
+                ];
             }
         }
 
-        return true;
+        return [
+            'result' => true
+        ];
+
     }
 
     /**
@@ -168,11 +195,17 @@ class Checker
     {
         foreach (self::getSoftErrorWords() as $word) {
             if (mb_stripos($metaData->getBody()->getContents(), $word) !== false) {
-                return false;
+                return [
+                    'result' => false,
+                    'status' => 'NG WORD :' .$word
+                ];
             }
         }
 
-        return true;
+        return [
+            'result' => true
+        ];
+
     }
 
     /**
