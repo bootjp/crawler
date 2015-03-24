@@ -57,15 +57,16 @@ class Checker
             $urlList[] = (string) $url;
         }
 
-        foreach ($urlList as $url) {
+        foreach ($urlList as $key => $url) {
 
             $metaData = $this->client->get($url);
 
-            if ($this->hardCheckByHeader($metaData) &&
-                $this->softCheckByContents($metaData)) {
-                $result['white'][] = $url;
+            if ($this->hardCheckByHeader($metaData)['result'] && $this->softCheckByContents($metaData)['result']) {
+                $result['white'][$key]['url'] = $url;
             } else {
-                $result['black'][] = $url;
+                $result['black'][$key] = $url;
+                $result['black'][$key]['status'] = isset($this->hardCheckByHeader($metaData)['status'])
+                      ? $this->hardCheckByHeader($metaData)['status'] : $this->softCheckByContents($metaData)['status'];
             }
 
             sleep(5);
@@ -124,19 +125,29 @@ class Checker
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 503) ||
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 502) ||
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 500)) {
-            return false;
+            return [
+                'result' => false,
+                'status' => 'header'
+            ];
         }
 
         if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 200) ||
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 304)) {
-            return true;
+            return [
+                'result' => true
+            ];
         }
 
         if (array_key_exists('content-length', $head) && $head['content-length'][0] >= $this->contentsSize) {
-            return true;
+            return [
+                'result' => true
+            ];
+
         }
 
-        return true;
+        return [
+            'result' => true
+        ];
     }
 
     /**
@@ -147,20 +158,26 @@ class Checker
     public function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
         if ($metaData->getBody()->getSize() <= $this->contentsSize) {
-            return false;
+            return [
+                'result' => false,
+                'status' => 'contentsSize'
+            ];
         }
 
         if ($this->doubleCheck) {
             $result = $this->softCheckByContentsWords($metaData);
             if (!$result['result']) {
                 return [
-                    'result' => false,
-                    'word' => $result['word']
+                    'result' => $result['result'],
+                    'status' => $result['status']
                 ];
             }
         }
 
-        return true;
+        return [
+            'result' => true
+        ];
+
     }
 
     /**
@@ -174,12 +191,15 @@ class Checker
             if (mb_stripos($metaData->getBody()->getContents(), $word) !== false) {
                 return [
                     'result' => false,
-                    'word' => $word
+                    'status' => $word
                 ];
             }
         }
 
-        return true;
+        return [
+            'result' => true
+        ];
+
     }
 
     /**

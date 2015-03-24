@@ -9,7 +9,7 @@
 require_once (__DIR__ . '/vendor/autoload.php');
 require_once (__DIR__ . '/Checker.php');
 
-if (count($argv) < 2 ){
+if ($argc < 2 ){
     echo "Use ex. $ php test.php https://bootjp.me/ \n";
     exit;
 }
