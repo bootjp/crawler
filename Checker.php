@@ -57,19 +57,25 @@ class Checker
             $urlList[] = (string) $url;
         }
 
+        echo 'Cheking..';
+
         foreach ($urlList as $key => $url) {
 
             $metaData = $this->client->get($url);
 
-            if ($this->hardCheckByHeader($metaData)['result'] && $this->softCheckByContents($metaData)['result']) {
+            $headCheck = (array) $this->hardCheckByHeader($metaData);
+            $softCheck = (array) $this->softCheckByContents($metaData);
+
+            if ($headCheck['result'] && $softCheck['result']) {
                 $result['white'][$key]['url'] = $url;
+                $result['white'][$key]['status'] = 'OK';
             } else {
-                $result['black'][$key] = $url;
-                $result['black'][$key]['status'] = isset($this->hardCheckByHeader($metaData)['status'])
-                      ? $this->hardCheckByHeader($metaData)['status'] : $this->softCheckByContents($metaData)['status'];
+                $result['black'][$key]['url'] = $url;
+                $result['black'][$key]['status'] = array_key_exists('status', $headCheck) ? $headCheck['status'] : $softCheck['status'];
             }
 
             sleep(5);
+            echo '.';
         }
 
         $result['UnknownLinks'] = $this->garbage;
@@ -127,7 +133,7 @@ class Checker
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 500)) {
             return [
                 'result' => false,
-                'status' => 'header'
+                'status' => 'NG : status code'
             ];
         }
 
@@ -160,7 +166,7 @@ class Checker
         if ($metaData->getBody()->getSize() <= $this->contentsSize) {
             return [
                 'result' => false,
-                'status' => 'contentsSize'
+                'status' => 'NG : contentsSize'
             ];
         }
 
@@ -191,7 +197,7 @@ class Checker
             if (mb_stripos($metaData->getBody()->getContents(), $word) !== false) {
                 return [
                     'result' => false,
-                    'status' => $word
+                    'status' => 'NG WORD :' .$word
                 ];
             }
         }
