@@ -14,4 +14,5 @@ if ($argc < 2 ){
     exit;
 }
 
+echo "\n";
 print_r((new Error\Checker())->start($argv[1], isset($argv[2]) ? (bool) $argv[2] : true));

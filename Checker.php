@@ -63,15 +63,15 @@ class Checker
 
             $metaData = $this->client->get($url);
 
-            $headCheck = (array) $this->hardCheckByHeader($metaData);
+            $hardCheck = (array) $this->hardCheckByHeader($metaData);
             $softCheck = (array) $this->softCheckByContents($metaData);
 
-            if ($headCheck['result'] && $softCheck['result']) {
+            if ($hardCheck['result'] && $softCheck['result']) {
                 $result['white'][$key]['url'] = $url;
                 $result['white'][$key]['status'] = 'OK';
             } else {
                 $result['black'][$key]['url'] = $url;
-                $result['black'][$key]['status'] = array_key_exists('status', $headCheck) ? $headCheck['status'] : $softCheck['status'];
+                $result['black'][$key]['status'] = array_key_exists('status', $hardCheck) ? $hardCheck['status'] : $softCheck['status'];
             }
 
             sleep(5);
@@ -133,7 +133,16 @@ class Checker
             is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 500)) {
             return [
                 'result' => false,
-                'status' => 'NG : status code'
+                'status' => 'NG : status code 40X or 50X'
+            ];
+        }
+
+        if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 301) ||
+            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 302) ||
+            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 308)) {
+            return [
+                'result' => false,
+                'status' => 'NG : status code 30X'
             ];
         }
 
@@ -197,7 +206,7 @@ class Checker
             if (mb_stripos($metaData->getBody()->getContents(), $word) !== false) {
                 return [
                     'result' => false,
-                    'status' => 'NG WORD :' .$word
+                    'status' => 'NG WORD : ' .$word
                 ];
             }
         }
