@@ -74,7 +74,7 @@ class Checker
                 $result['black'][$key]['status'] = array_key_exists('status', $hardCheck) ? $hardCheck['status'] : $softCheck['status'];
             }
 
-            sleep(5);
+            sleep(1);
             echo '.';
         }
 
