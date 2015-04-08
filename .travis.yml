@@ -3,5 +3,10 @@ language: php
 php:
   - 5.3
   - 5.4
+  - 5.5
+  - 7
 
-command: php composer.phar install
+before_script: curl -s http://getcomposer.org/installer | php
+before_script: php composer.phar install
+
+script: phpunit
