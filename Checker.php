@@ -26,11 +26,15 @@ class Checker
     {
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
-        $this->client = new \GuzzleHttp\Client();
-        $this->client->setDefaultOption('exceptions', false);
-        $this->client->setDefaultOption(
-              'headers', ['User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) '
-            . 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36']);
+        $this->client = new \GuzzleHttp\Client(
+            ['defaults' =>
+                ['exceptions' => false],
+                ['headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) '
+                  . 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36']
+                ]
+            ]
+        );
     }
     /**
      * Wrapper
@@ -107,8 +111,12 @@ class Checker
 
             if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}i', $url)) {
                 $urlList[] = $url;
-            } else if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}i', $baseUrl . $url)) {
-                $urlList[] = $baseUrl . $url;
+            } else if (preg_match('{https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+}i', $baseUrl . $url)) {
+                if (preg_match("{(^#[A-Z0-9].+?$)}i", $url)) {
+                    $this->garbage[] = $url;
+                } else {
+                    $urlList[] = preg_replace('{[?!https?:\/\/][\/{2,}]}', '/', $baseUrl . $url);
+                }
             } else {
                 $this->garbage[] = $url;
             }
