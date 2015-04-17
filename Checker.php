@@ -22,7 +22,7 @@ class Checker
      * @param int  $contentSize [optional]
      * @param bool $doubleCheck [optional]
      */
-    public function __construct($contentSize = 500, $doubleCheck = true)
+    public function __construct($username = null, $password = null, $contentSize = 500, $doubleCheck = true)
     {
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
@@ -35,6 +35,9 @@ class Checker
                 ]
             ]
         );
+        if (!is_null($username) && !is_null($password)) {
+            $this->client->setDefaultOption('auth', [$username, $password]);
+        }
     }
     /**
      * Wrapper
