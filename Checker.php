@@ -22,7 +22,7 @@ class Checker
      * @param int  $contentSize [optional]
      * @param bool $doubleCheck [optional]
      */
-    public function __construct($contentSize = 500, $doubleCheck = true)
+    public function __construct($auth = null, $contentSize = 500, $doubleCheck = true)
     {
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
@@ -35,6 +35,10 @@ class Checker
                 ]
             ]
         );
+        if (!is_null($auth)) {
+            list($username, $password) = explode(':', $auth, 2);
+            $this->client->setDefaultOption('auth', [$username, $password]);
+        }
     }
     /**
      * Wrapper
@@ -115,7 +119,7 @@ class Checker
                 if (preg_match("{(^#[A-Z0-9].+?$)}i", $url)) {
                     $this->garbage[] = $url;
                 } else {
-                    $urlList[] = preg_replace('{[?!https?:\/\/][\/{2,}]}', '/', $baseUrl . $url);
+                    $urlList[] = $baseUrl . $url;
                 }
             } else {
                 $this->garbage[] = $url;

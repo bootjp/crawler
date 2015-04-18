@@ -13,6 +13,5 @@ if ($argc < 2 ){
     echo "Use ex. $ php test.php https://bootjp.me/ \n";
     exit;
 }
-
 echo "\n";
-print_r((new Error\Checker())->start($argv[1], isset($argv[2]) ? (bool) $argv[2] : true));
+print_r((new Error\Checker(isset($argv[3])? $argv[3] : null))->start($argv[1], isset($argv[2]) ? (bool) $argv[2] : true));
