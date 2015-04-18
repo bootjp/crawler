@@ -24,7 +24,12 @@ $ php test.php https://bootjp.me/
 or
 $ php test.php https://bootjp.me/ true
 ```
+###### args3 is contents on the url cheker.
 
+Basic Auth
+```shell
+$ php test.php https://bootjp.me/ true username:password
+```
 args value 3 is true when fetch URL on the contents links.
 
 [LICENSE](https://github.com/bootjp/crawler/blob/master/LICENSE)
