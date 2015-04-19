@@ -86,7 +86,6 @@ class Checker
             sleep(1);
             echo '.';
         }
-
         $result['UnknownLinks'] = $this->garbage;
 
         return $result;
@@ -132,7 +131,7 @@ class Checker
     /**
      * Error check by header
      * @param \GuzzleHttp\Message\Response $metaData
-     * @return bool Soft404 or normalContents
+     * @return array
      */
     private function hardCheckByHeader(\GuzzleHttp\Message\Response $metaData)
     {
@@ -170,7 +169,6 @@ class Checker
             return [
                 'result' => true
             ];
-
         }
 
         return [
@@ -181,7 +179,7 @@ class Checker
     /**
      * Soft404 check by contents Length
      * @param \GuzzleHttp\Message\Response $metaData
-     * @return bool
+     * @return array
      */
     public function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
     {
@@ -205,13 +203,12 @@ class Checker
         return [
             'result' => true
         ];
-
     }
 
     /**
      * Soft404 Error check by words
      * @param \GuzzleHttp\Message\Response $metaData
-     * @return bool Result
+     * @return array Result
      */
     private function softCheckByContentsWords(\GuzzleHttp\Message\Response $metaData)
     {
@@ -219,7 +216,7 @@ class Checker
             if (mb_stripos($metaData->getBody()->getContents(), $word) !== false) {
                 return [
                     'result' => false,
-                    'status' => 'NG WORD : ' .$word
+                    'status' => 'NG WORD : ' . $word
                 ];
             }
         }
