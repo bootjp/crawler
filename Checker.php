@@ -15,12 +15,15 @@ class Checker
 
     protected $doubleCheck;
 
+    protected $recursion;
+
     protected $garbage = [];
 
     /**
      * initialisation.
-     * @param int  $contentSize [optional]
-     * @param bool $doubleCheck [optional]
+     * @param String $auth        [optional]
+     * @param int    $contentSize [optional]
+     * @param bool   $doubleCheck [optional]
      */
     public function __construct($auth = null, $contentSize = 500, $doubleCheck = true)
     {
@@ -53,18 +56,14 @@ class Checker
         $urlList = [];
         $result['white'] = [];
         $result['black'] = [];
-        list($getFlag, $recursion) = explode(':', $flag, 2);
+        list($getFlag, $this->recursion) = explode(':', $flag, 2);
 
         if ((bool) $getFlag) {
             echo 'Contents fetching..';
             $url = $this->fetchByContents($url);
 
-            if ((bool) $recursion) {
-                $urlList = array_map(function($uri) {
-                    return $this->fetchByContents($uri);
-                }, $url);
-
-                $url = $this->urlFilter($urlList);
+            if ((bool) $this->recursion) {
+                $url = $this->urlFilter(array_map([$this, 'fetchByContents'], $url));
             }
         }
 
@@ -137,6 +136,9 @@ class Checker
 
             usleep(500000);
             echo '.';
+        }
+        if ($this->recursion) {
+            //array_walk_recursive(array_unique($urlList), [$this, 'fetchByContents']);
         }
 
         return array_unique($urlList);
