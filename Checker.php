@@ -48,11 +48,12 @@ class Checker
      * @throws ReflectionException
      * @return array URLLIST
      */
-    public function start($url, $getFlag = false, $recursion = false)
+    public function start($url, $flag = 'true:false')
     {
         $urlList = [];
         $result['white'] = [];
         $result['black'] = [];
+        list((bool) $getFlag, (bool) $recursion) = explode(':', $flag, 2);
 
         if ($getFlag) {
             $url = $this->fetchByContents($url);
