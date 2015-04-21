@@ -53,12 +53,13 @@ class Checker
         $urlList = [];
         $result['white'] = [];
         $result['black'] = [];
-        list((bool) $getFlag, (bool) $recursion) = explode(':', $flag, 2);
+        list($getFlag, $recursion) = explode(':', $flag, 2);
 
-        if ($getFlag) {
+        if ((bool) $getFlag) {
+            echo 'Contents fetching..';
             $url = $this->fetchByContents($url);
 
-            if ($recursion) {
+            if ((bool) $recursion) {
                 $urlList = array_map(function($uri) {
                     return $this->fetchByContents($uri);
                 }, $url);
@@ -77,6 +78,7 @@ class Checker
             $urlList[] = (string) $url;
         }
 
+        echo "\n";
         echo 'Cheking..';
 
         foreach ($urlList as $key => $url) {
@@ -92,7 +94,7 @@ class Checker
                 $result['black'][$key]['status'] = array_key_exists('status', $hardCheck) ? $hardCheck['status'] : $softCheck['status'];
             }
 
-            sleep(1);
+            usleep(500000);
             echo '.';
         }
         $result['UnknownLinks'] = $this->garbage;
@@ -132,6 +134,9 @@ class Checker
             } else {
                 $this->garbage[] = $url;
             }
+
+            usleep(500000);
+            echo '.';
         }
 
         return array_unique($urlList);
