@@ -42,12 +42,13 @@ class Checker
     }
     /**
      * Wrapper
-     * @param mixed $url    [require]
-     * @param bool $getFlag [optional] true when fetch content on the $url
-     * @throws \ReflectionException
+     * @param  mixed $url      [require]
+     * @param  bool $getFlag   [optional] true when fetch content on the $url
+     * @param  bool $recursion [optional] true when fetch content on the link recursion.
+     * @throws ReflectionException
      * @return array URLLIST
      */
-    public function start($url, $getFlag = false)
+    public function start($url, $getFlag = false, $recursion = false)
     {
         $urlList = [];
         $result['white'] = [];
@@ -55,22 +56,29 @@ class Checker
 
         if ($getFlag) {
             $url = $this->fetchByContents($url);
+
+            if ($recursion) {
+                $urlList = array_map(function($uri) {
+                    return $this->fetchByContents($uri);
+                }, $url);
+
+                $url = $this->urlFilter($urlList);
+            }
         }
 
         if (is_null($url)) {
             throw new \ReflectionException('Start URL is not null.');
         } else if (is_array($url)) {
-            foreach ($url as $value) {
-                $urlList[] = $value;
-            }
-        } else {
+            $urlList = $this->urlFilter($url);
+        } else if (is_string($value)) {
+            $urlList[] = $url;
+        } else if (is_object($value)) {
             $urlList[] = (string) $url;
         }
 
         echo 'Cheking..';
 
         foreach ($urlList as $key => $url) {
-
             $metaData = $this->client->get($url);
             $hardCheck = (array) $this->hardCheckByHeader($metaData);
             $softCheck = (array) $this->softCheckByContents($metaData);
@@ -93,7 +101,7 @@ class Checker
 
     /**
      * Fetch Page Contents Links
-     * @param mixed $baseUrl
+     * @param  mixed $baseUrl
      * @return array URllist
      */
     private function fetchByContents($baseUrl)
@@ -235,5 +243,20 @@ class Checker
     private static function getSoftErrorWords()
     {
         return file('ErrorPageWords.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    }
+
+    /**
+     * multidimensional array to single arry comvert.
+     * @param array $urlList
+     * @return array URLLIST
+     */
+    private function urlFilter(array $urlList)
+    {
+        $result = [];
+        array_walk_recursive($urlList, function($v) use (&$result) {
+            $result[] = $v;
+        });
+
+        return array_values(array_unique($result));
     }
 }
