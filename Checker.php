@@ -43,13 +43,16 @@ class Checker
             $this->client->setDefaultOption('auth', [$username, $password]);
         }
     }
+
     /**
      * Wrapper
-     * @param  mixed $url      [require]
-     * @param  bool $getFlag   [optional] true when fetch content on the $url
-     * @param  bool $recursion [optional] true when fetch content on the link recursion.
-     * @throws ReflectionException
-     * @return array URLLIST
+     * @param  mixed $url [require]
+     * @param string $flag
+     * @return array
+     * @throws \ErrorException
+     * @throws \ReflectionException
+     * @internal param bool $getFlag [optional] true when fetch content on the $url
+     * @internal param bool $recursion [optional] true when fetch content on the link recursion.
      */
     public function start($url, $flag = 'true:false')
     {
@@ -63,7 +66,7 @@ class Checker
             $url = $this->fetchByContents($url);
 
             if ((bool) $this->recursion) {
-                $url = $this->urlFilter(array_map([$this, 'fetchByContents'], $url));
+                $url = $this->urlFilter($url);
             }
         }
 
@@ -71,9 +74,9 @@ class Checker
             throw new \ReflectionException('Start URL is not null.');
         } else if (is_array($url)) {
             $urlList = $this->urlFilter($url);
-        } else if (is_string($value)) {
+        } else if (is_string($url)) {
             $urlList[] = $url;
-        } else if (is_object($value)) {
+        } else if (is_object($url)) {
             $urlList[] = (string) $url;
         }
 
@@ -105,6 +108,7 @@ class Checker
      * Fetch Page Contents Links
      * @param  mixed $baseUrl
      * @return array URllist
+     * @throws \ErrorException
      */
     private function fetchByContents($baseUrl)
     {
@@ -127,6 +131,8 @@ class Checker
             } else if (preg_match('{https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+}i', $baseUrl . $url)) {
                 if (preg_match("{(^#[A-Z0-9].+?$)}i", $url)) {
                     $this->garbage[] = $url;
+                } else if (preg_match("#javascript.*#i", $url)) {
+                    $this->garbage[] = $url;
                 } else {
                     $urlList[] = $baseUrl . $url;
                 }
@@ -136,9 +142,6 @@ class Checker
 
             usleep(500000);
             echo '.';
-        }
-        if ($this->recursion) {
-            //array_walk_recursive(array_unique($urlList), [$this, 'fetchByContents']);
         }
 
         return array_unique($urlList);
