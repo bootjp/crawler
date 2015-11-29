@@ -2,7 +2,7 @@ language: php
 
 before_script:
     - composer install
-script: php test.php https://bootjp.me/
+script: php test.php https://travis-ci.org
 php:
   - 5.6
 
