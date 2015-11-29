@@ -2,7 +2,7 @@ language: php
 
 before_script:
     - composer install
-script: php test.php https://travis-ci.org
+script: php test.php https://travis-ci.org true:false
 php:
   - 5.6
 
