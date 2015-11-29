@@ -253,7 +253,7 @@ class Checker
      */
     private static function getSoftErrorWords()
     {
-        return file('ErrorPageWords.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        return file(__DIR__ . '/ErrorPageWords.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     }
 
     /**

@@ -31,6 +31,17 @@ $ php test.php https://bootjp.me/ true:false
 $ php test.php https://bootjp.me/ true:true
 ```
 -> https://bootjp.me/ is on the contents link all check  
+
+### Use docker images 
+
+dockerImage is hire -> https://hub.docker.com/r/bootjp/crawler
+
+
+```bash
+docker pull bootjp/crawler
+docker run bootjp/crawler php /app/wrapper.php https://hub.docker.com/r/bootjp/crawler true:false
+```
+
 ### Basic Auth
 ```shell
 $ php test.php https://bootjp.me/ true:true username:password
