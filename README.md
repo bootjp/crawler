@@ -39,7 +39,7 @@ dockerImage is hire -> https://hub.docker.com/r/bootjp/crawler
 
 ```bash
 docker pull bootjp/crawler
-docker run bootjp/crawler php /app/wrapper.php https://hub.docker.com/r/bootjp/crawler true:false
+docker run bootjp/crawler php /app/wrapper.php https://bootjp.me true:false
 ```
 
 ### Basic Auth
