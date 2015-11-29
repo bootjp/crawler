@@ -1,5 +1,7 @@
 # OreTokuCrawler
 
+[![Build Status](https://travis-ci.org/bootjp/crawler.svg?branch=master)](https://travis-ci.org/bootjp/crawler)
+
 ## Now Beta2 Version relese.
 * https://github.com/bootjp/crawler/releases
 
