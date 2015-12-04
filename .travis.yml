@@ -5,4 +5,5 @@ before_script:
 script: php wrapper.php https://travis-ci.org true:false
 php:
   - 5.6
+  - 7
 
