@@ -2,6 +2,8 @@
 
 namespace Error;
 
+require_once (__DIR__ . '/vendor/autoload.php');
+
 /**
  * Description of Checker Main
  *
@@ -29,12 +31,13 @@ class Checker
     {
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
-        $this->client = new \GuzzleHttp\Client(
-            ['defaults' =>
-                ['exceptions' => false],
-                ['headers' => [
-                    'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) '
-                  . 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36']
+        $this->client = new \GuzzleHttp\Client([
+                'defaults' => [
+                    'exceptions' => false,
+                    'headers' => [
+                        'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) ' .
+                        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36'
+                    ]
                 ]
             ]
         );
