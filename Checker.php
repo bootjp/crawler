@@ -13,9 +13,9 @@ class Checker
 {
     protected $client;
 
-    protected $contentsSize;
+    protected $contentsSize = 500;
 
-    protected $doubleCheck;
+    protected $doubleCheck = true;
 
     protected $recursion;
 
@@ -23,11 +23,9 @@ class Checker
 
     /**
      * initialisation.
-     * @param String $auth        [optional]
-     * @param int    $contentSize [optional]
-     * @param bool   $doubleCheck [optional]
+     * @param array $args
      */
-    public function __construct($auth = null, $contentSize = 500, $doubleCheck = true)
+    public function __construct(array $args)
     {
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
@@ -41,10 +39,28 @@ class Checker
                 ]
             ]
         );
-        if (!is_null($auth)) {
+        if (array_key_exists('contentSize', $args)) {
+            $this->contentsSize = (int) $args['contentSize'];
+        }
+        if (array_key_exists('doubleCheck', $args)) {
+            $this->doubleCheck = (bool) $args['doubleCheck'];
+        }
+        if (array_key_exists('auth', $args)) {
             list($username, $password) = explode(':', $auth, 2);
             $this->client->setDefaultOption('auth', [$username, $password]);
         }
+
+
+        $this->client = new \GuzzleHttp\Client([
+            'defaults' => [
+                'exceptions' => false,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) '
+                  . 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36'
+                ]
+            ]
+        ]);
+
     }
 
     /**
