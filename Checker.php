@@ -13,21 +13,22 @@ class Checker
 {
     protected $client;
 
-    protected $contentsSize;
+    protected $contentsSize = 500;
 
-    protected $doubleCheck;
+    protected $doubleCheck = true;
 
-    protected $recursion;
+    protected $recursion = false;
 
     protected $garbage = [];
 
+    protected $isContentsFetch = true;
+
+
     /**
      * initialisation.
-     * @param String $auth        [optional]
-     * @param int    $contentSize [optional]
-     * @param bool   $doubleCheck [optional]
+     * @param array $args
      */
-    public function __construct($auth = null, $contentSize = 500, $doubleCheck = true)
+    public function __construct(array $args)
     {
         $this->contentsSize = (int) $contentSize;
         $this->doubleCheck = (bool) $doubleCheck;
@@ -41,30 +42,54 @@ class Checker
                 ]
             ]
         );
-        if (!is_null($auth)) {
-            list($username, $password) = explode(':', $auth, 2);
+        if (array_key_exists('contentSize', $args)) {
+            $this->contentsSize = (int) $args['contentSize'];
+        }
+
+        if (array_key_exists('doubleCheck', $args)) {
+            $this->doubleCheck = (bool) $args['doubleCheck'];
+        }
+
+        if (array_key_exists('isContentsFetch', $args)) {
+            $this->isContentsFetch = (bool) $args['isContentsFetch'];
+        }
+
+        if (array_key_exists('recursion', $args)) {
+            $this->recursion = (bool) $args['recursion'];
+        }
+
+
+        $this->client = new \GuzzleHttp\Client([
+            'defaults' => [
+                'exceptions' => false,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) '
+                  . 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36'
+                ]
+            ]
+        ]);
+
+        if (array_key_exists('auth', $args)) {
+            list($username, $password) = explode(':', $args['auth'], 2);
             $this->client->setDefaultOption('auth', [$username, $password]);
         }
+
     }
 
     /**
      * Wrapper
      * @param  mixed $url [require]
-     * @param string $flag
      * @return array
      * @throws \ErrorException
      * @throws \ReflectionException
-     * @internal param bool $getFlag [optional] true when fetch content on the $url
-     * @internal param bool $recursion [optional] true when fetch content on the link recursion.
      */
-    public function start($url, $flag = 'true:false')
+    public function start($url)
     {
         $urlList = [];
         $result['white'] = [];
         $result['black'] = [];
-        list($getFlag, $this->recursion) = explode(':', $flag, 2);
 
-        if ((bool) $getFlag) {
+        if ((bool) $this->isContentsFetch) {
             echo 'Contents fetching..';
             $url = $this->fetchByContents($url);
 
@@ -87,7 +112,11 @@ class Checker
         echo 'Cheking..';
 
         foreach ($urlList as $key => $url) {
-            $metaData = $this->client->get($url);
+            try {
+                $metaData = $this->client->get($url);
+            } catch (\Exception $e) {
+                echo "\n {$url}\t {$e->getMessage()}";
+            }
             $hardCheck = (array) $this->hardCheckByHeader($metaData);
             $softCheck = (array) $this->softCheckByContents($metaData);
 
@@ -110,7 +139,7 @@ class Checker
     /**
      * Fetch Page Contents Links
      * @param  mixed $baseUrl
-     * @return array URllist
+     * @return array URlList
      * @throws \ErrorException
      */
     private function fetchByContents($baseUrl)
@@ -118,8 +147,11 @@ class Checker
         $urlList = [];
         $matches = [];
         $urlList['baseUrl'] = (string) $baseUrl;
-
-        $contents = $this->client->get($baseUrl)->getBody()->getContents();
+        try {
+            $contents = $this->client->get($baseUrl)->getBody()->getContents();
+        } catch (\Exception $e) {
+            echo "\n {$baseUrl}\t {$e->getMessage()}";
+        }
 
         preg_match_all('{<a.+?href=[\"|\'](?<url>.+?)[\"\|\'].*?>}is', $contents, $matches);
 
