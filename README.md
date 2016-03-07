@@ -21,14 +21,14 @@ or
 $ composer install
 ```
 ### Use Ex.
-```shell
-$ php test.php https://bootjp.me/
+```bash
+$ php wrapper.php --url=https://bootjp.me
 or
-$ php test.php https://bootjp.me/ true:false
+$  php wrapper.php --url=https://bootjp.me --recursion=false
 ```
 -> https://bootjp.me/ is root on the contents link check
-```shell
-$ php test.php https://bootjp.me/ true:true
+```bash
+$ php wrapper.php --url=https://bootjp.me --recursion=true
 ```
 -> https://bootjp.me/ is on the contents link all check  
 
@@ -39,12 +39,12 @@ dockerImage is hire -> https://hub.docker.com/r/bootjp/crawler
 
 ```bash
 docker pull bootjp/crawler
-docker run bootjp/crawler php /app/wrapper.php https://bootjp.me true:false
+docker run bootjp/crawler php wrapper.php --url=https://bootjp.me --recursion=false --auth=username:password
 ```
 
 ### Basic Auth
 ```shell
-$ php test.php https://bootjp.me/ true:true username:password
+$ php wrapper.php --url=https://bootjp.me --recursion=false --auth=username:password
 ```
 [LICENSE](https://github.com/bootjp/crawler/blob/master/LICENSE)
 

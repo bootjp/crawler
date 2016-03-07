@@ -17,9 +17,12 @@ class Checker
 
     protected $doubleCheck = true;
 
-    protected $recursion;
+    protected $recursion = false;
 
     protected $garbage = [];
+
+    protected $isContentsFetch = true;
+
 
     /**
      * initialisation.
@@ -42,12 +45,17 @@ class Checker
         if (array_key_exists('contentSize', $args)) {
             $this->contentsSize = (int) $args['contentSize'];
         }
+
         if (array_key_exists('doubleCheck', $args)) {
             $this->doubleCheck = (bool) $args['doubleCheck'];
         }
-        if (array_key_exists('auth', $args)) {
-            list($username, $password) = explode(':', $auth, 2);
-            $this->client->setDefaultOption('auth', [$username, $password]);
+
+        if (array_key_exists('isContentsFetch', $args)) {
+            $this->isContentsFetch = (bool) $args['isContentsFetch'];
+        }
+
+        if (array_key_exists('recursion', $args)) {
+            $this->recursion = (bool) $args['recursion'];
         }
 
 
@@ -61,26 +69,27 @@ class Checker
             ]
         ]);
 
+        if (array_key_exists('auth', $args)) {
+            list($username, $password) = explode(':', $args['auth'], 2);
+            $this->client->setDefaultOption('auth', [$username, $password]);
+        }
+
     }
 
     /**
      * Wrapper
      * @param  mixed $url [require]
-     * @param string $flag
      * @return array
      * @throws \ErrorException
      * @throws \ReflectionException
-     * @internal param bool $getFlag [optional] true when fetch content on the $url
-     * @internal param bool $recursion [optional] true when fetch content on the link recursion.
      */
-    public function start($url, $flag = 'true:false')
+    public function start($url)
     {
         $urlList = [];
         $result['white'] = [];
         $result['black'] = [];
-        list($getFlag, $this->recursion) = explode(':', $flag, 2);
 
-        if ((bool) $getFlag) {
+        if ((bool) $this->isContentsFetch) {
             echo 'Contents fetching..';
             $url = $this->fetchByContents($url);
 
@@ -103,7 +112,11 @@ class Checker
         echo 'Cheking..';
 
         foreach ($urlList as $key => $url) {
-            $metaData = $this->client->get($url);
+            try {
+                $metaData = $this->client->get($url);
+            } catch (\Exception $e) {
+                echo "\n {$url}\t {$e->getMessage()}";
+            }
             $hardCheck = (array) $this->hardCheckByHeader($metaData);
             $softCheck = (array) $this->softCheckByContents($metaData);
 
@@ -126,7 +139,7 @@ class Checker
     /**
      * Fetch Page Contents Links
      * @param  mixed $baseUrl
-     * @return array URllist
+     * @return array URlList
      * @throws \ErrorException
      */
     private function fetchByContents($baseUrl)
@@ -134,8 +147,11 @@ class Checker
         $urlList = [];
         $matches = [];
         $urlList['baseUrl'] = (string) $baseUrl;
-
-        $contents = $this->client->get($baseUrl)->getBody()->getContents();
+        try {
+            $contents = $this->client->get($baseUrl)->getBody()->getContents();
+        } catch (\Exception $e) {
+            echo "\n {$baseUrl}\t {$e->getMessage()}";
+        }
 
         preg_match_all('{<a.+?href=[\"|\'](?<url>.+?)[\"\|\'].*?>}is', $contents, $matches);
 
