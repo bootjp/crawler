@@ -58,17 +58,6 @@ class Checker
             $this->recursion = (bool) $args['recursion'];
         }
 
-
-        $this->client = new \GuzzleHttp\Client([
-            'defaults' => [
-                'exceptions' => false,
-                'headers' => [
-                    'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) '
-                  . 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36'
-                ]
-            ]
-        ]);
-
         if (array_key_exists('auth', $args)) {
             list($username, $password) = explode(':', $args['auth'], 2);
             $this->client->setDefaultOption('auth', [$username, $password]);
