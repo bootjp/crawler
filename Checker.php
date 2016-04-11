@@ -30,8 +30,6 @@ class Checker
      */
     public function __construct(array $args)
     {
-        $this->contentsSize = (int) $contentSize;
-        $this->doubleCheck = (bool) $doubleCheck;
         $this->client = new \GuzzleHttp\Client([
                 'defaults' => [
                     'exceptions' => false,
