@@ -1,5 +1,15 @@
 {
-  "require": {
-    "guzzlehttp/guzzle": "~5.0"
-  }
+    "name": "bootjp/crawler",
+    "description": "Web pages 404 and soft 404 checker",
+    "require": {
+        "guzzlehttp/guzzle": "5.x.x"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "bootjp",
+            "email": "oh@bootjp.me"
+        }
+    ],
+    "minimum-stability": "beta"
 }
