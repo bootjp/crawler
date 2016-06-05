@@ -1,5 +1,7 @@
 <?php
 
+namespace Error;
+
 require_once (__DIR__ . '/vendor/autoload.php');
 
 /**

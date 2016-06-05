@@ -1,6 +1,5 @@
 <?php
 
-require_once (__DIR__ . '/vendor/autoload.php');
 require_once (__DIR__ . '/Checker.php');
 
 if ($argc < 2 ){
@@ -26,4 +25,4 @@ if (in_array(null, $options, true)) {
 echo "\n";
 
 
-print_r((new Checker($options))->start($options['url']));
+print_r((new Error\Checker($options))->start($options['url']));
