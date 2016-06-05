@@ -177,7 +177,7 @@ class Checker
     private function hardCheckByHeader(\GuzzleHttp\Message\Response $metaData)
     {
         $headers = array_change_key_case($metaData->getHeaders());
-        $statusCode = $metaData->getStatusCode();
+        $statusCode = (int) $metaData->getStatusCode();
 
         $isErrorPageCode = [
             '40x' => [401, 403, 404],
