@@ -176,39 +176,34 @@ class Checker
      */
     private function hardCheckByHeader(\GuzzleHttp\Message\Response $metaData)
     {
-        $head = array_change_key_case($metaData->getHeaders());
+        $headers = array_change_key_case($metaData->getHeaders());
+        $statusCode = $metaData->getStatusCode();
 
-        if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 404) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 403) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 401) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 503) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 502) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 500)) {
-            return [
-                'result' => false,
-                'status' => 'NG : status code 40X or 50X'
-            ];
+        $isErrorPageCode = [
+            '40x' => [401, 403, 404],
+            '50x' => [500, 502, 503],
+            '30x' => [301, 302, 308]
+        ];
+
+        foreach($isErrorPageCode as $errorType => $statuses) {
+            if (in_array($statusCode, $statuses)) {
+                return [
+                    'result' => false,
+                    'status' => "NG : status code {$errorType}"
+                ];
+            }
         }
 
-        if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 301) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 302) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 308)) {
-            return [
-                'result' => false,
-                'status' => 'NG : status code 30X'
-            ];
-        }
-
-        if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 200) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 304)) {
+        if ($statusCode === 200 && $statusCode === 304) {
             return [
                 'result' => true
             ];
         }
 
-        if (array_key_exists('content-length', $head) && $head['content-length'][0] >= $this->contentsSize) {
+        if (array_key_exists('content-length', $headers) && $headers['content-length'][0] < $this->contentsSize) {
             return [
-                'result' => true
+                'result' => false,
+                'status' => 'NG : contentsSize'
             ];
         }
 
