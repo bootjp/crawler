@@ -1,6 +1,7 @@
 # OreTokuCrawler
 
 [![Build Status](https://travis-ci.org/bootjp/crawler.svg?branch=master)](https://travis-ci.org/bootjp/crawler)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/bootjp/crawler/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/bootjp/crawler/?branch=master)
 
 ## Now Beta2 Version relese.
 * https://github.com/bootjp/crawler/releases
