@@ -26,4 +26,4 @@ if (in_array(null, $options, true)) {
 echo "\n";
 
 
-print_r((new Checker($options))->start($options['url']));
+print_r((new Error\Checker($options))->start($options['url']));
