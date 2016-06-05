@@ -73,6 +73,7 @@ class Checker
     public function start($url)
     {
         $urlList = [];
+        $result = [];
         $result['white'] = [];
         $result['black'] = [];
 
