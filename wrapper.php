@@ -4,8 +4,7 @@ require_once (__DIR__ . '/vendor/autoload.php');
 require_once (__DIR__ . '/Checker.php');
 
 if ($argc < 2 ){
-    echo "Use ex. $ php wrapper.php https://bootjp.me/ \n";
-    exit;
+    throw new InvalidArgumentException('Use ex. $ php wrapper.php https://bootjp.me/');
 }
 
 $options = array_merge([
