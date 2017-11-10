@@ -155,7 +155,7 @@ class Checker
      * @param \GuzzleHttp\Message\Response $metaData
      * @return array
      */
-    private function hardCheckByHeader(\GuzzleHttp\Message\Response $metaData)
+    private function hardCheckByHeader($metaData)
     {
         $head = array_change_key_case($metaData->getHeaders());
 
@@ -203,7 +203,7 @@ class Checker
      * @param \GuzzleHttp\Message\Response $metaData
      * @return array
      */
-    public function softCheckByContents(\GuzzleHttp\Message\Response $metaData)
+    public function softCheckByContents($metaData)
     {
         if ($metaData->getBody()->getSize() <= $this->contentsSize) {
             return [
