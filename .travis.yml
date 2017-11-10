@@ -2,7 +2,7 @@ language: php
 
 before_script:
     - composer install
-script: php wrapper.php https://travis-ci.org true:false
+script: php wrapper.php --url=https://bootjp.me
 php:
   - 7
 

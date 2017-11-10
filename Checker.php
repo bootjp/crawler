@@ -13,24 +13,23 @@ class Checker
 {
     protected $client;
 
-    protected $contentsSize;
+    protected $contentsSize = 500;
 
-    protected $doubleCheck;
+    protected $doubleCheck = true;
 
-    protected $recursion;
+    protected $recursion = false;
 
     protected $garbage = [];
 
+    protected $isContentsFetch = true;
+
+
     /**
      * initialisation.
-     * @param String $auth        [optional]
-     * @param int    $contentSize [optional]
-     * @param bool   $doubleCheck [optional]
+     * @param array $args
      */
-    public function __construct($auth = null, $contentSize = 500, $doubleCheck = true)
+    public function __construct(array $args)
     {
-        $this->contentsSize = (int) $contentSize;
-        $this->doubleCheck = (bool) $doubleCheck;
         $this->client = new \GuzzleHttp\Client([
                 'defaults' => [
                     'exceptions' => false,
@@ -41,28 +40,42 @@ class Checker
                 ]
             ]
         );
-        if (!is_null($auth)) {
-            list($username, $password) = explode(':', $auth, 2);
+        if (array_key_exists('contentSize', $args)) {
+            $this->contentsSize = (int) $args['contentSize'];
+        }
+
+        if (array_key_exists('doubleCheck', $args)) {
+            $this->doubleCheck = (bool) $args['doubleCheck'];
+        }
+
+        if (array_key_exists('isContentsFetch', $args)) {
+            $this->isContentsFetch = (bool) $args['isContentsFetch'];
+        }
+
+        if (array_key_exists('recursion', $args)) {
+            $this->recursion = (bool) $args['recursion'];
+        }
+
+        if (array_key_exists('auth', $args)) {
+            list($username, $password) = explode(':', $args['auth'], 2);
             $this->client->setDefaultOption('auth', [$username, $password]);
         }
+
     }
 
     /**
      * Wrapper
      * @param  mixed $url [require]
-     * @param string $flag
      * @return array
      * @throws \ErrorException
      * @throws \ReflectionException
-     * @internal param bool $getFlag [optional] true when fetch content on the $url
-     * @internal param bool $recursion [optional] true when fetch content on the link recursion.
      */
-    public function start($url, $flag = 'true:false')
+    public function start($url)
     {
         $urlList = [];
+        $result = [];
         $result['white'] = [];
         $result['black'] = [];
-        $list = explode(':', $flag, 2);
         if (array_key_exists(0, $list)) {
             $getFlag = $list[0];
         }
@@ -70,7 +83,7 @@ class Checker
             $this->recursion = $list[1];
         }
 
-        if ((bool) $getFlag) {
+        if ((bool) $this->isContentsFetch) {
             echo 'Contents fetching..';
             $url = $this->fetchByContents($url);
 
@@ -93,7 +106,11 @@ class Checker
         echo 'Cheking..';
 
         foreach ($urlList as $key => $url) {
-            $metaData = $this->client->get($url);
+            try {
+                $metaData = $this->client->get($url);
+            } catch (\Exception $e) {
+                echo "\n {$url}\t {$e->getMessage()}";
+            }
             $hardCheck = (array) $this->hardCheckByHeader($metaData);
             $softCheck = (array) $this->softCheckByContents($metaData);
 
@@ -116,7 +133,7 @@ class Checker
     /**
      * Fetch Page Contents Links
      * @param  mixed $baseUrl
-     * @return array URllist
+     * @return array URlList
      * @throws \ErrorException
      */
     private function fetchByContents($baseUrl)
@@ -124,8 +141,11 @@ class Checker
         $urlList = [];
         $matches = [];
         $urlList['baseUrl'] = (string) $baseUrl;
-
-        $contents = $this->client->get($baseUrl)->getBody()->getContents();
+        try {
+            $contents = $this->client->get($baseUrl)->getBody()->getContents();
+        } catch (\Exception $e) {
+            echo "\n {$baseUrl}\t {$e->getMessage()}";
+        }
 
         preg_match_all('{<a.+?href=[\"|\'](?<url>.+?)[\"\|\'].*?>}is', $contents, $matches);
 
@@ -182,39 +202,34 @@ class Checker
      */
     private function hardCheckByHeader($metaData)
     {
-        $head = array_change_key_case($metaData->getHeaders());
+        $headers = array_change_key_case($metaData->getHeaders());
+        $statusCode = (int) $metaData->getStatusCode();
 
-        if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 404) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 403) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 401) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 503) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 502) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 500)) {
-            return [
-                'result' => false,
-                'status' => 'NG : status code 40X or 50X'
-            ];
+        $isErrorPageCode = [
+            '40x' => [401, 403, 404],
+            '50x' => [500, 502, 503],
+            '30x' => [301, 302, 308]
+        ];
+
+        foreach($isErrorPageCode as $errorType => $statuses) {
+            if (in_array($statusCode, $statuses)) {
+                return [
+                    'result' => false,
+                    'status' => "NG : status code {$errorType}"
+                ];
+            }
         }
 
-        if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 301) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 302) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 308)) {
-            return [
-                'result' => false,
-                'status' => 'NG : status code 30X'
-            ];
-        }
-
-        if (is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 200) ||
-            is_int($metaData->getStatusCode() && $metaData->getStatusCode() === 304)) {
+        if ($statusCode === 200 && $statusCode === 304) {
             return [
                 'result' => true
             ];
         }
 
-        if (array_key_exists('content-length', $head) && $head['content-length'][0] >= $this->contentsSize) {
+        if (array_key_exists('content-length', $headers) && $headers['content-length'][0] < $this->contentsSize) {
             return [
-                'result' => true
+                'result' => false,
+                'status' => 'NG : contentsSize'
             ];
         }
 

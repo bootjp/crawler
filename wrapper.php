@@ -1,12 +1,28 @@
 <?php
 
-require_once (__DIR__ . '/vendor/autoload.php');
 require_once (__DIR__ . '/Checker.php');
 
 if ($argc < 2 ){
-    echo "Use ex. $ php wrapper.php https://bootjp.me/ \n";
-    exit;
+    throw new InvalidArgumentException('Use ex. $ php wrapper.php https://bootjp.me/');
 }
+
+$options = array_merge([
+    'url' => null,
+    'recursion' => false,
+    'doubleCheck' => true
+], getopt('', [
+    'url:',
+    'recursion:',
+    'doubleCheck::',
+    'auth::'
+]));
+
+if (in_array(null, $options, true)) {
+    throw new InvalidArgumentException('Invalid args');
+}
+
+
 echo "\n";
-print_r((new Error\Checker(isset($argv[3])? $argv[3] : null))
-        ->start($argv[1], isset($argv[2]) ? $argv[2] : 'true:false'));
+
+
+print_r((new Error\Checker($options))->start($options['url']));
