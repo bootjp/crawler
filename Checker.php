@@ -144,10 +144,15 @@ class Checker
                     $this->garbage[] = $url;
                 } else {
                     // start slash ?
-                    if (substr($url, 0, 1) === '/') {
+                    $startSlash = substr($url, 0, 1) === '/';
+                    $secondSlash = substr($url, 1, 1) === '/';
+                    if ($startSlash && $secondSlash) {
                         $parsedUrl = parse_url($baseUrl);
+                        $urlList[] = $parsedUrl['scheme'] . ':' . $url;
+                    } else if ($startSlash) {
                         // end is slash?
-                        if (substr($baseUrl, - 1, 1) === '/') {
+                        $parsedUrl = parse_url($baseUrl);
+                        if (substr($baseUrl, -1, 1) === '/') {
                             // has slash
                             $root = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
                         } else {
