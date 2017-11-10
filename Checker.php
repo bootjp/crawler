@@ -74,7 +74,7 @@ class Checker
         }
 
         if (is_null($url)) {
-            throw new \ReflectionException('Start URL is not null.');
+            throw new \RuntimeException('Start URL is not null.');
         } else if (is_array($url)) {
             $urlList = $this->urlFilter($url);
         } else if (is_string($url)) {
@@ -124,14 +124,14 @@ class Checker
         preg_match_all('{<a.+?href=[\"|\'](?<url>.+?)[\"\|\'].*?>}is', $contents, $matches);
 
         if (!array_key_exists('url', $matches)) {
-            throw new \ErrorException('Not match contents on url.');
+            throw new \RuntimeException('Not match contents on url.');
         }
 
         foreach ($matches['url'] as $url) {
 
             if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}i', $url)) {
                 $urlList[] = $url;
-            } else if (preg_match('{https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+}i', $baseUrl . $url)) {
+            } else if (preg_match('^{https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+}i$', $baseUrl . $url)) {
                 if (preg_match("{(^#[A-Z0-9].+?$)}i", $url)) {
                     $this->garbage[] = $url;
                 } else if (preg_match("#javascript.*#i", $url)) {
