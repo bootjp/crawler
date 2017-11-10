@@ -4,6 +4,5 @@ before_script:
     - composer install
 script: php wrapper.php https://travis-ci.org true:false
 php:
-  - 5.6
   - 7
 

@@ -62,7 +62,13 @@ class Checker
         $urlList = [];
         $result['white'] = [];
         $result['black'] = [];
-        list($getFlag, $this->recursion) = explode(':', $flag, 2);
+        $list = explode(':', $flag, 2);
+        if (array_key_exists(0, $list)) {
+            $getFlag = $list[0];
+        }
+        if (array_key_exists(1, $list)) {
+            $this->recursion = $list[1];
+        }
 
         if ((bool) $getFlag) {
             echo 'Contents fetching..';
@@ -131,13 +137,27 @@ class Checker
 
             if (preg_match('{https?://[\w/:%#\$&\?\(\)~\.=\+\-]+}i', $url)) {
                 $urlList[] = $url;
-            } else if (preg_match('^{https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+}i$', $baseUrl . $url)) {
+            } else if (preg_match('{^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$}i', $baseUrl . $url)) {
                 if (preg_match("{(^#[A-Z0-9].+?$)}i", $url)) {
                     $this->garbage[] = $url;
                 } else if (preg_match("#javascript.*#i", $url)) {
                     $this->garbage[] = $url;
                 } else {
-                    $urlList[] = $baseUrl . $url;
+                    // start slash ?
+                    if (substr($url, 0, 1) === '/') {
+                        $parsedUrl = parse_url($baseUrl);
+                        // end is slash?
+                        if (substr($baseUrl, - 1, 1) === '/') {
+                            // has slash
+                            $root = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
+                        } else {
+                            // add slash
+                            $root = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . '/';
+                        }
+                        $urlList[] = $root . $url;
+                    } else {
+                        $urlList[] = $baseUrl . $url;
+                    }
                 }
             } else {
                 $this->garbage[] = $url;
@@ -232,7 +252,7 @@ class Checker
      * @param \GuzzleHttp\Message\Response $metaData
      * @return array Result
      */
-    private function softCheckByContentsWords(\GuzzleHttp\Message\Response $metaData)
+    private function softCheckByContentsWords($metaData)
     {
         foreach (self::getSoftErrorWords() as $word) {
             if (mb_stripos($metaData->getBody()->getContents(), $word) !== false) {
